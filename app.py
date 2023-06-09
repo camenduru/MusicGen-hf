@@ -12,10 +12,25 @@ import gradio as gr
 from audiocraft.models import MusicGen
 
 from audiocraft.data.audio import audio_write
+import subprocess, random, string
 
 
 MODEL = None
 
+def generate_random_string(length):
+    characters = string.ascii_letters + string.digits
+    return ''.join(random.choice(characters) for _ in range(length))
+
+def resize_video(input_path, output_path, target_width, target_height):
+    ffmpeg_cmd = [
+        'ffmpeg',
+        '-y',
+        '-i', input_path,
+        '-vf', f'scale={target_width}:{target_height}',
+        '-c:a', 'copy',
+        output_path
+    ]
+    subprocess.run(ffmpeg_cmd)
 
 def load_model(version):
     print("Loading model", version)
@@ -57,8 +72,11 @@ def predict(model, text, melody, duration, topk, topp, temperature, cfg_coef):
     output = output.detach().cpu().float()[0]
     with NamedTemporaryFile("wb", suffix=".wav", delete=False) as file:
         audio_write(file.name, output, MODEL.sample_rate, strategy="loudness", add_suffix=False)
-        waveform_video = gr.make_waveform(file.name, bg_color="#fed700" , bars_color=('#fe218b', '#21b0fe'), fg_alpha=1.0, bar_count=75)
-    return waveform_video
+        waveform_video = gr.make_waveform(file.name, bg_color="#21b0fe" , bars_color=('#fe218b', '#fed700'), fg_alpha=1.0, bar_count=75)
+        random_string = generate_random_string(12)
+        random_string = f"/content/{random_string}.mp4"
+        resize_video(waveform_video, random_string, 1000, 500)
+    return random_string
 
 
 with gr.Blocks() as demo:
