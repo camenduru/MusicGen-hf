@@ -57,7 +57,7 @@ def predict(model, text, melody, duration, topk, topp, temperature, cfg_coef):
     output = output.detach().cpu().float()[0]
     with NamedTemporaryFile("wb", suffix=".wav", delete=False) as file:
         audio_write(file.name, output, MODEL.sample_rate, strategy="loudness", add_suffix=False)
-        waveform_video = gr.make_waveform(file.name, bg_color="#ffd6e0" , bars_color=('#90f1ef', '#ffef9f'))
+        waveform_video = gr.make_waveform(file.name, bg_color="#fbfef9" , bars_color=('#90f1ef', '#ffd6e0', '#ffef9f'), fg_alpha=1.0, bar_count=75)
     return waveform_video
 
 
